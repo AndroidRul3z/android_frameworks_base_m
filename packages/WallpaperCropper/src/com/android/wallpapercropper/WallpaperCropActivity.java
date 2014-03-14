@@ -369,15 +369,16 @@ public class WallpaperCropActivity extends Activity {
         d.getSize(displaySize);
         boolean isPortrait = displaySize.x < displaySize.y;
 
-        Point defaultWallpaperSize = getDefaultWallpaperSize(getResources(),
-                getWindowManager());
+        WallpaperManager wpMgr = WallpaperManager.getInstance(WallpaperCropActivity.this);
+        Point defaultWallpaperSize = new Point(wpMgr.getDesiredMinimumWidth(),
+                                            wpMgr.getDesiredMinimumHeight());
         // Get the crop
         RectF cropRect = mCropView.getCrop();
 
         Point inSize = mCropView.getSourceDimensions();
 
         int cropRotation = mCropView.getImageRotation();
-        float cropScale = mCropView.getWidth() / (float) cropRect.width();
+        float cropScale = defaultWallpaperSize.x / (float) cropRect.width();
 
         Matrix rotateMatrix = new Matrix();
         rotateMatrix.setRotate(cropRotation);

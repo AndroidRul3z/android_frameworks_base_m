@@ -16,6 +16,7 @@
 /* Copied from Launcher3 */
 package com.android.wallpapercropper;
 
+import android.app.WallpaperManager;
 import android.content.Context;
 import android.graphics.Matrix;
 import android.graphics.Point;
@@ -46,6 +47,8 @@ public class CropView extends TiledImageView implements OnScaleGestureListener {
     private float[] mTempAdjustment = new float[] { 0, 0 };
     private float[] mTempImageDims = new float[] { 0, 0 };
     private float[] mTempRendererCenter = new float[] { 0, 0 };
+    private int mWallpaperWidth;
+    private int mWallpaperHeight;
     TouchCallback mTouchCallback;
     Matrix mRotateMatrix;
     Matrix mInverseRotateMatrix;
@@ -80,8 +83,8 @@ public class CropView extends TiledImageView implements OnScaleGestureListener {
     }
 
     private void getEdgesHelper(RectF edgesOut) {
-        final float width = getWidth();
-        final float height = getHeight();
+        final float width = mWallpaperWidth;
+        final float height = mWallpaperHeight;
         final float[] imageDims = getImageDims();
         final float imageWidth = imageDims[0];
         final float imageHeight = imageDims[1];
@@ -123,8 +126,8 @@ public class CropView extends TiledImageView implements OnScaleGestureListener {
 
         float cropLeft = -edges.left / scale;
         float cropTop = -edges.top / scale;
-        float cropRight = cropLeft + getWidth() / scale;
-        float cropBottom = cropTop + getHeight() / scale;
+        float cropRight = cropLeft + mWallpaperWidth / scale;
+        float cropBottom = cropTop + mWallpaperHeight / scale;
 
         return new RectF(cropLeft, cropTop, cropRight, cropBottom);
     }
@@ -141,11 +144,11 @@ public class CropView extends TiledImageView implements OnScaleGestureListener {
         mRotateMatrix.setRotate(mRenderer.rotation);
         mInverseRotateMatrix.reset();
         mInverseRotateMatrix.setRotate(-mRenderer.rotation);
-        updateMinScale(getWidth(), getHeight(), source, true);
-    }
 
-    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        updateMinScale(w, h, mRenderer.source, false);
+        WallpaperManager wpMgr = WallpaperManager.getInstance(getContext());
+        mWallpaperWidth  = wpMgr.getDesiredMinimumWidth();
+        mWallpaperHeight = wpMgr.getDesiredMinimumHeight();
+        updateMinScale(mWallpaperWidth, mWallpaperHeight, source, true);
     }
 
     public void setScale(float scale) {
@@ -295,13 +298,13 @@ public class CropView extends TiledImageView implements OnScaleGestureListener {
                 mTempAdjustment[1] = 0;
                 if (edges.left > 0) {
                     adjustment[0] = edges.left / scale;
-                } else if (edges.right < getWidth()) {
-                    adjustment[0] = (edges.right - getWidth()) / scale;
+                } else if (edges.right < mWallpaperWidth) {
+                    adjustment[0] = (edges.right - mWallpaperWidth) / scale;
                 }
                 if (edges.top > 0) {
                     adjustment[1] = (float) Math.ceil(edges.top / scale);
-                } else if (edges.bottom < getHeight()) {
-                    adjustment[1] = (edges.bottom - getHeight()) / scale;
+                } else if (edges.bottom < mWallpaperHeight) {
+                    adjustment[1] = (edges.bottom - mWallpaperHeight) / scale;
                 }
                 for (int dim = 0; dim <= 1; dim++) {
                     if (coef[dim] > 0) adjustment[dim] = (float) Math.ceil(adjustment[dim]);
