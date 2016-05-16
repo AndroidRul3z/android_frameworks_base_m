@@ -363,7 +363,6 @@ public class NotificationPanelView extends PanelView implements
                 mCanDismissKeyguard = true;
                 mShowingExternalKeyguard = false;
                 mStatusBar.showBouncer();
-                mStatusBar.unfocusKeyguardExternalView();
                 return true;
             }
 
