@@ -111,6 +111,7 @@ public class WallpaperCropActivity extends Activity {
                     @Override
                     public void onClick(View v) {
                         boolean finishActivityWhenDone = true;
+                        actionBar.getCustomView().setEnabled(false);
                         cropImageAndSetWallpaper(imageUri, null, finishActivityWhenDone);
                     }
                 });
