@@ -25,6 +25,7 @@ import static android.content.pm.PackageManager.INTENT_FILTER_DOMAIN_VERIFICATIO
 import android.app.ActivityManager;
 import android.content.ComponentName;
 import android.content.pm.FeatureInfo;
+import android.content.pm.Signature;
 import android.os.*;
 import android.os.Process;
 import android.util.ArrayMap;
@@ -106,6 +107,9 @@ public class SystemConfig {
     // URL-handling state upon factory reset.
     final ArraySet<AppLink> mLinkedApps = new ArraySet<>();
 
+    final ArrayMap<Signature, ArraySet<String>> mSignatureAllowances
+            = new ArrayMap<Signature, ArraySet<String>>();
+
     // These are the permitted backup transport service components
     final ArraySet<ComponentName> mBackupTransportWhitelist = new ArraySet<>();
 
@@ -152,6 +156,10 @@ public class SystemConfig {
 
     public ArraySet<AppLink> getLinkedApps() {
         return mLinkedApps;
+    }
+
+    public ArrayMap<Signature, ArraySet<String>> getSignatureAllowances() {
+        return mSignatureAllowances;
     }
 
     public ArraySet<ComponentName> getBackupTransportWhitelist() {
@@ -302,6 +310,43 @@ public class SystemConfig {
                         mSystemPermissions.put(uid, perms);
                     }
                     perms.add(perm);
+                    XmlUtils.skipCurrentTag(parser);
+
+                } else if ("allow-permission".equals(name)) {
+                    String perm = parser.getAttributeValue(null, "name");
+                    if (perm == null) {
+                        Slog.w(TAG,
+                                "<allow-permission> without name at "
+                                        + parser.getPositionDescription());
+                        XmlUtils.skipCurrentTag(parser);
+                        continue;
+                    }
+                    String signature = parser.getAttributeValue(null, "signature");
+                    if (signature == null) {
+                        Slog.w(TAG,
+                                "<allow-permission> without signature at "
+                                        + parser.getPositionDescription());
+                        XmlUtils.skipCurrentTag(parser);
+                        continue;
+                    }
+                    Signature sig = null;
+                    try {
+                        sig = new Signature(signature);
+                    } catch (IllegalArgumentException e) {
+                        // sig will be null so we will log it below
+                    }
+                    if (sig != null) {
+                        ArraySet<String> perms = mSignatureAllowances.get(sig);
+                        if (perms == null) {
+                            perms = new ArraySet<String>();
+                            mSignatureAllowances.put(sig, perms);
+                        }
+                        perms.add(perm);
+                    } else {
+                        Slog.w(TAG,
+                                "<allow-permission> with bad signature at "
+                                        + parser.getPositionDescription());
+                    }
                     XmlUtils.skipCurrentTag(parser);
 
                 } else if ("library".equals(name) && !onlyFeatures) {
