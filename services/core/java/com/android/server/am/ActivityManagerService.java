@@ -18137,7 +18137,7 @@ public final class ActivityManagerService extends ActivityManagerNative
 
         app.systemNoUi = false;
 
-        final int PROCESS_STATE_CUR_TOP = mTopProcessState;
+        final int PROCESS_STATE_TOP = mTopProcessState;
 
         // Determine the importance of the process, starting with most
         // important to least, and assign an appropriate OOM adjustment.
@@ -18152,7 +18152,7 @@ public final class ActivityManagerService extends ActivityManagerNative
             schedGroup = Process.THREAD_GROUP_DEFAULT;
             app.adjType = "top-activity";
             foregroundActivities = true;
-            procState = PROCESS_STATE_CUR_TOP;
+            procState = PROCESS_STATE_TOP;
             if(app == mHomeProcess) {
                 mHomeKilled = false;
                 mHomeProcessName = mHomeProcess.processName;
@@ -18217,8 +18217,8 @@ public final class ActivityManagerService extends ActivityManagerNative
                         adj = ProcessList.VISIBLE_APP_ADJ;
                         app.adjType = "visible";
                     }
-                    if (procState > PROCESS_STATE_CUR_TOP) {
-                        procState = PROCESS_STATE_CUR_TOP;
+                    if (procState > PROCESS_STATE_TOP) {
+                        procState = PROCESS_STATE_TOP;
                     }
                     schedGroup = Process.THREAD_GROUP_DEFAULT;
                     app.cached = false;
@@ -18230,8 +18230,8 @@ public final class ActivityManagerService extends ActivityManagerNative
                         adj = ProcessList.PERCEPTIBLE_APP_ADJ;
                         app.adjType = "pausing";
                     }
-                    if (procState > PROCESS_STATE_CUR_TOP) {
-                        procState = PROCESS_STATE_CUR_TOP;
+                    if (procState > PROCESS_STATE_TOP) {
+                        procState = PROCESS_STATE_TOP;
                     }
                     schedGroup = Process.THREAD_GROUP_DEFAULT;
                     app.cached = false;
@@ -18266,8 +18266,7 @@ public final class ActivityManagerService extends ActivityManagerNative
             }
         }
 
-        if (adj > ProcessList.PERCEPTIBLE_APP_ADJ
-                || procState > ActivityManager.PROCESS_STATE_FOREGROUND_SERVICE) {
+        if (adj > ProcessList.PERCEPTIBLE_APP_ADJ) {
             if (app.foregroundServices) {
                 // The user is aware of this app, so make it visible.
                 adj = ProcessList.PERCEPTIBLE_APP_ADJ;
